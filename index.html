@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Counter</title>
+  </head>
+  <body>
+    <div id="counter">0</div>
+    <button onclick="incrementCounter()">Click me</button>
+    <script>
+      let count = 0;
+      function incrementCounter() {
+        count++;
+        document.getElementById('counter').innerText = count;
+      }
+    </script>
+  </body>
+</html>

@@ -11,19 +11,6 @@ import (
 var upgrader = websocket.Upgrader{}
 var count = 0
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "index.html")
-}
-
 func serveWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -56,7 +43,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", serveHome)
+	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/ws", serveWs)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

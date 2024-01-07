@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 )
@@ -33,7 +33,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		case "getCount":
 		}
 
-		data := []byte(fmt.Sprint(count))
+		data := []byte(strconv.Itoa(count))
 		err = conn.WriteMessage(websocket.TextMessage, data)
 		if err != nil {
 			log.Println(err)

@@ -4,13 +4,21 @@
     <title>Counter</title>
   </head>
   <body>
-    <div id="counter">0</div>
+    <div id="counter"></div>
     <button onclick="incrementCounter()">Click me</button>
     <script>
-      let count = 0;
+      let socket = new WebSocket("ws://" + document.location.host + "/ws");
+
+      socket.onopen = function(event) {
+        socket.send("getCount");
+      };
+
+      socket.onmessage = function(event) {
+        document.getElementById('counter').innerText = event.data;
+      };
+
       function incrementCounter() {
-        count++;
-        document.getElementById('counter').innerText = count;
+        socket.send("increment");
       }
     </script>
   </body>

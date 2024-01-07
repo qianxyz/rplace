@@ -14,7 +14,7 @@ var count = 0
 func serveWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log.Println("upgrade:", err)
 		return
 	}
 
@@ -23,7 +23,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			log.Println("read:", err)
 			break
 		}
 
@@ -36,7 +36,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		data := []byte(strconv.Itoa(count))
 		err = conn.WriteMessage(websocket.TextMessage, data)
 		if err != nil {
-			log.Println(err)
+			log.Println("write:", err)
 			break
 		}
 	}

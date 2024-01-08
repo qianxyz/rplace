@@ -41,9 +41,8 @@ func (c *Client) readPump() {
 			break
 		}
 
-		if string(message) != "increment" {
-			continue
-		}
+		// the only message is to increment
+		_ = message
 
 		c.server.broadcast <- true
 	}

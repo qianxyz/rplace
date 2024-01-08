@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Counter</title>
-  </head>
-  <body>
-    <div id="counter"></div>
-    <button onclick="incrementCounter()">Click me</button>
-    <script>
-      let socket = new WebSocket("ws://" + document.location.host + "/ws");
 
-      socket.onopen = function(event) {
-        socket.send("getCount");
-      };
+<head>
+  <title>Counter</title>
+</head>
 
-      socket.onmessage = function(event) {
-        document.getElementById('counter').innerText = event.data;
-      };
+<body>
+  <div id="counter"></div>
+  <button onclick="incrementCounter()">Click me</button>
+  <script>
+    let socket = new WebSocket("ws://" + document.location.host + "/ws");
 
-      function incrementCounter() {
-        socket.send("increment");
-      }
-    </script>
-  </body>
+    socket.onmessage = function (event) {
+      document.getElementById('counter').innerText = event.data;
+    };
+
+    function incrementCounter() {
+      socket.send("increment");
+    }
+  </script>
+</body>
+
 </html>

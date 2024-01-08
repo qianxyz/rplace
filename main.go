@@ -9,7 +9,10 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
+
+// TODO: Locks
 var count = 0
+var conns = make(map[*websocket.Conn]bool)
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -18,7 +21,12 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer conn.Close()
+	conns[conn] = true
+
+	defer func() {
+		delete(conns, conn)
+		conn.Close()
+	}()
 
 	for {
 		_, message, err := conn.ReadMessage()
@@ -30,14 +38,22 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		switch string(message) {
 		case "increment":
 			count++
-		case "getCount":
-		}
+			data := []byte(strconv.Itoa(count))
 
-		data := []byte(strconv.Itoa(count))
-		err = conn.WriteMessage(websocket.TextMessage, data)
-		if err != nil {
-			log.Println("write:", err)
-			break
+			for c := range conns {
+				err = c.WriteMessage(websocket.TextMessage, data)
+				if err != nil {
+					log.Println("write:", err)
+					break
+				}
+			}
+		case "getCount":
+			data := []byte(strconv.Itoa(count))
+			err = conn.WriteMessage(websocket.TextMessage, data)
+			if err != nil {
+				log.Println("write:", err)
+				break
+			}
 		}
 	}
 }

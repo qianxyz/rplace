@@ -11,7 +11,7 @@ import (
 var upgrader = websocket.Upgrader{}
 
 type Client struct {
-	server *Server
+	hub *Hub
 
 	// The websocket connection.
 	conn *websocket.Conn
@@ -23,7 +23,7 @@ type Client struct {
 
 func (c *Client) readPump() {
 	defer func() {
-		c.server.unregister <- c
+		c.hub.unregister <- c
 		c.conn.Close()
 	}()
 
@@ -44,7 +44,7 @@ func (c *Client) readPump() {
 		// the only message is to increment
 		_ = message
 
-		c.server.broadcast <- true
+		c.hub.broadcast <- true
 	}
 }
 
@@ -68,7 +68,7 @@ func (c *Client) writePump() {
 	}
 }
 
-func serveWs(s *Server, w http.ResponseWriter, r *http.Request) {
+func serveWs(h *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -76,11 +76,11 @@ func serveWs(s *Server, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		server: s,
-		conn:   conn,
-		send:   make(chan int, 256),
+		hub:  h,
+		conn: conn,
+		send: make(chan int, 256),
 	}
-	client.server.register <- client
+	client.hub.register <- client
 
 	go client.writePump()
 	go client.readPump()

@@ -1,6 +1,6 @@
 package main
 
-type Server struct {
+type Hub struct {
 	// The counter.
 	counter int
 
@@ -18,8 +18,8 @@ type Server struct {
 	unregister chan *Client
 }
 
-func newServer() *Server {
-	return &Server{
+func newHub() *Hub {
+	return &Hub{
 		counter:    0,
 		clients:    make(map[*Client]bool),
 		broadcast:  make(chan bool),
@@ -28,25 +28,25 @@ func newServer() *Server {
 	}
 }
 
-func (s *Server) run() {
+func (h *Hub) run() {
 	for {
 		select {
-		case c := <-s.register:
-			s.clients[c] = true
-			c.send <- s.counter // first time loading
-		case c := <-s.unregister:
-			if _, ok := s.clients[c]; ok {
-				delete(s.clients, c)
+		case c := <-h.register:
+			h.clients[c] = true
+			c.send <- h.counter // first time loading
+		case c := <-h.unregister:
+			if _, ok := h.clients[c]; ok {
+				delete(h.clients, c)
 				close(c.send)
 			}
-		case <-s.broadcast:
-			s.counter++
-			for c := range s.clients {
+		case <-h.broadcast:
+			h.counter++
+			for c := range h.clients {
 				select {
-				case c.send <- s.counter:
+				case c.send <- h.counter:
 				default: // client not listening, probably dead
 					close(c.send)
-					delete(s.clients, c)
+					delete(h.clients, c)
 				}
 			}
 		}

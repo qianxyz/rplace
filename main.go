@@ -6,12 +6,12 @@ import (
 )
 
 func main() {
-	server := newServer()
-	go server.run()
+	hub := newHub()
+	go hub.run()
 
 	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(server, w, r)
+		serveWs(hub, w, r)
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -16,7 +16,7 @@ type Client struct {
 	// The websocket connection.
 	conn *websocket.Conn
 
-	// Channel for outbound message from server.
+	// Buffered channel for outbound message from server.
 	// For the counter app, the message is the value of the counter.
 	send chan int
 }
@@ -78,7 +78,7 @@ func serveWs(s *Server, w http.ResponseWriter, r *http.Request) {
 	client := &Client{
 		server: s,
 		conn:   conn,
-		send:   make(chan int),
+		send:   make(chan int, 256),
 	}
 	client.server.register <- client
 

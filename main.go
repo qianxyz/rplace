@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,6 +46,23 @@ func togglePixel(c *gin.Context) {
 	// TODO: Handle OOB
 	grid[i/8] ^= (1 << (7 - i%8))
 
+	v := (grid[i/8] >> (7 - i%8)) & 1
+
+	data, err := json.Marshal(struct {
+		X     int  `json:"x"`
+		Y     int  `json:"y"`
+		Color byte `json:"color"`
+	}{
+		X:     pos.X,
+		Y:     pos.Y,
+		Color: v,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	wss.broadcast <- data
+
 	c.String(http.StatusOK, "")
 }
 
@@ -59,6 +78,9 @@ func main() {
 
 	router.StaticFile("/", "./index.html")
 	router.StaticFile("/index.js", "./index.js")
+
+	go wss.run()
+	router.GET("/ws", serveWs)
 
 	router.Run(":8080")
 }

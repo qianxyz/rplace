@@ -47,10 +47,15 @@ func togglePixel(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
+func getBoard(c *gin.Context) {
+	c.String(http.StatusOK, string(grid[:]))
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/pixel", getPixel)
 	router.POST("/toggle", togglePixel)
+	router.GET("/board", getBoard)
 
 	router.Run(":8080")
 }

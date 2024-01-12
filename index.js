@@ -7,6 +7,9 @@ const COLOR_BLACK = "#000000";
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
 
+const API = "http://" + document.location.host;
+const WS = "ws://" + document.location.host + "/ws";
+
 const canvas = document.getElementById("place");
 canvas.height = (CELL_SIZE + SEP_WIDTH) * BOARD_HEIGHT + SEP_WIDTH;
 canvas.width = (CELL_SIZE + SEP_WIDTH) * BOARD_WIDTH + SEP_WIDTH;
@@ -15,7 +18,7 @@ const ctx = canvas.getContext('2d');
 
 // Fetch and draw the whole board.
 async function drawBoard() {
-  const response = await fetch("http://" + document.location.host + "/board");
+  const response = await fetch(API + "/board");
   const buffer = await response.arrayBuffer();
   const board = new Uint8Array(buffer);
 
@@ -61,7 +64,7 @@ canvas.addEventListener("click", async event => {
   const row = Math.floor(canvasTop / (CELL_SIZE + SEP_WIDTH));
   const col = Math.floor(canvasLeft / (CELL_SIZE + SEP_WIDTH));
 
-  await fetch("http://" + document.location.host + "/toggle", {
+  await fetch(API + "/toggle", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ "x": row, "y": col }),
@@ -69,7 +72,7 @@ canvas.addEventListener("click", async event => {
 });
 
 // Establish websocket connection.
-const socket = new WebSocket("ws://" + document.location.host + "/ws");
+const socket = new WebSocket(WS);
 
 socket.onmessage = (event) => {
   const data = JSON.parse(event.data);

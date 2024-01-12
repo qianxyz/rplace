@@ -1,6 +1,6 @@
-const CELL_SIZE = 20; // px
+const CELL_SIZE = 25; // px
+const SEP_WIDTH = 2;
 
-const COLOR_GRAY = "#CCCCCC";
 const COLOR_WHITE = "#FFFFFF";
 const COLOR_BLACK = "#000000";
 
@@ -8,30 +8,12 @@ const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
 
 const canvas = document.getElementById("place");
-canvas.height = (CELL_SIZE + 1) * BOARD_HEIGHT + 1;
-canvas.width = (CELL_SIZE + 1) * BOARD_WIDTH + 1;
+canvas.height = (CELL_SIZE + SEP_WIDTH) * BOARD_HEIGHT + SEP_WIDTH;
+canvas.width = (CELL_SIZE + SEP_WIDTH) * BOARD_WIDTH + SEP_WIDTH;
 
 const ctx = canvas.getContext('2d');
 
-function drawGrid() {
-  ctx.beginPath();
-  ctx.strokeStyle = COLOR_GRAY;
-
-  // Vertical lines.
-  for (let i = 0; i <= BOARD_WIDTH; i++) {
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-    ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * BOARD_HEIGHT + 1);
-  }
-
-  // Horizontal lines.
-  for (let j = 0; j <= BOARD_HEIGHT; j++) {
-    ctx.moveTo(0, j * (CELL_SIZE + 1) + 1);
-    ctx.lineTo((CELL_SIZE + 1) * BOARD_WIDTH + 1, j * (CELL_SIZE + 1) + 1);
-  }
-
-  ctx.stroke();
-};
-
+// Fetch and draw the whole board.
 async function drawBoard() {
   const response = await fetch("http://" + document.location.host + "/board");
   const buffer = await response.arrayBuffer();
@@ -49,8 +31,8 @@ async function drawBoard() {
         : COLOR_WHITE;
 
       ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
+        col * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
+        row * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
         CELL_SIZE,
         CELL_SIZE
       );
@@ -60,6 +42,7 @@ async function drawBoard() {
   ctx.stroke();
 }
 
+// Trigger request on click.
 canvas.addEventListener("click", async event => {
   const boundingRect = canvas.getBoundingClientRect();
 
@@ -69,8 +52,14 @@ canvas.addEventListener("click", async event => {
   const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
   const canvasTop = (event.clientY - boundingRect.top) * scaleY;
 
-  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), BOARD_HEIGHT - 1);
-  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), BOARD_WIDTH - 1);
+  // do nothing if click on grid, not cell
+  const clickOnGrid =
+    canvasLeft % (CELL_SIZE + SEP_WIDTH) < SEP_WIDTH ||
+    canvasTop % (CELL_SIZE + SEP_WIDTH) < SEP_WIDTH;
+  if (clickOnGrid) { return }
+
+  const row = Math.floor(canvasTop / (CELL_SIZE + SEP_WIDTH));
+  const col = Math.floor(canvasLeft / (CELL_SIZE + SEP_WIDTH));
 
   await fetch("http://" + document.location.host + "/toggle", {
     method: "POST",
@@ -79,9 +68,7 @@ canvas.addEventListener("click", async event => {
   });
 });
 
-drawGrid();
-drawBoard();
-
+// Establish websocket connection.
 const socket = new WebSocket("ws://" + document.location.host + "/ws");
 
 socket.onmessage = (event) => {
@@ -94,11 +81,14 @@ socket.onmessage = (event) => {
     : COLOR_WHITE;
 
   ctx.fillRect(
-    data.y * (CELL_SIZE + 1) + 1,
-    data.x * (CELL_SIZE + 1) + 1,
+    data.y * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
+    data.x * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
     CELL_SIZE,
     CELL_SIZE
   );
 
   ctx.stroke();
 }
+
+// Draw the initial state of board once.
+drawBoard();

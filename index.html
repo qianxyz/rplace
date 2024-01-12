@@ -2,23 +2,12 @@
 <html>
 
 <head>
-  <title>Counter</title>
+  <title>r/place</title>
 </head>
 
 <body>
-  <div id="counter"></div>
-  <button onclick="incrementCounter()">Click me</button>
-  <script>
-    let socket = new WebSocket("ws://" + document.location.host + "/ws");
-
-    socket.onmessage = function (event) {
-      document.getElementById('counter').innerText = event.data;
-    };
-
-    function incrementCounter() {
-      socket.send("increment");
-    }
-  </script>
+  <canvas id="place"></canvas>
+  <script src='./index.js'></script>
 </body>
 
 </html>

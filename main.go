@@ -57,5 +57,8 @@ func main() {
 	router.POST("/toggle", togglePixel)
 	router.GET("/board", getBoard)
 
+	router.StaticFile("/", "./index.html")
+	router.StaticFile("/index.js", "./index.js")
+
 	router.Run(":8080")
 }

@@ -15,6 +15,12 @@ type wsServer struct {
 	register  chan *websocket.Conn
 }
 
+var wss = wsServer{
+	clients:   make(map[*websocket.Conn]bool),
+	broadcast: make(chan []byte),
+	register:  make(chan *websocket.Conn),
+}
+
 func (wss *wsServer) run() {
 	for {
 		select {
@@ -30,12 +36,6 @@ func (wss *wsServer) run() {
 			}
 		}
 	}
-}
-
-var wss = wsServer{
-	clients:   make(map[*websocket.Conn]bool),
-	broadcast: make(chan []byte),
-	register:  make(chan *websocket.Conn),
 }
 
 func serveWs(c *gin.Context) {

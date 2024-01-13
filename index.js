@@ -67,7 +67,7 @@ canvas.addEventListener("click", async event => {
   await fetch(API + "/toggle", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ "x": row, "y": col }),
+    body: JSON.stringify({ "row": row, "col": col }),
   });
 });
 
@@ -84,8 +84,8 @@ socket.onmessage = (event) => {
     : COLOR_WHITE;
 
   ctx.fillRect(
-    data.y * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
-    data.x * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
+    data.col * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
+    data.row * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
     CELL_SIZE,
     CELL_SIZE
   );

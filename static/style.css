@@ -1,0 +1,8 @@
+body {
+  display: flex;
+  flex-flow: column;
+}
+
+.canvas-container {
+  flex: 1 1 auto;
+}

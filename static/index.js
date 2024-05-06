@@ -1,96 +1,95 @@
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
 
-$(document).ready(function () {
-  const canvas = document.getElementById("place");
-  const ctx = canvas.getContext("2d");
+// https://lospec.com/palette-list/r-place
+const COLORS = [
+  "#FFFFFF",
+  "#E4E4E4",
+  "#888888",
+  "#222222",
+  "#FFA7D1",
+  "#E50000",
+  "#E59500",
+  "#A06A42",
+  "#E5D900",
+  "#94E044",
+  "#02BE01",
+  "#00D3DD",
+  "#0083C7",
+  "#0000EA",
+  "#CF6EE4",
+  "#820080",
+];
+
+var color = 0;
+
+$(document).ready(async function () {
+  // Color pickers
+  // TODO: The check is hard to see on darker colors.
+  // Is there a better way to highlight current selection?
+  $(".color").each(function (index) {
+    $(this).css("background-color", COLORS[index]);
+    $(this).click(function () {
+      $(".color").eq(color).html(`&nbsp;`);
+      color = index;
+      $(this).html(`<i class="fa-solid fa-check"></i>`);
+    });
+  });
 
   // Set the canvas size to fill up the container as much as possible
+  const canvas = document.getElementById("place");
   const cellSize = Math.min(
     Math.floor($(".canvas-container").width() / BOARD_WIDTH),
     Math.floor($(".canvas-container").height() / BOARD_HEIGHT),
   );
   canvas.width = cellSize * BOARD_WIDTH;
   canvas.height = cellSize * BOARD_HEIGHT;
-});
 
-// const API = "http://" + document.location.host;
-// const WS = "ws://" + document.location.host + "/ws";
-//
-// // Fetch and draw the whole board.
-// async function drawBoard() {
-//   const response = await fetch(API + "/board");
-//   const buffer = await response.arrayBuffer();
-//   const board = new Uint8Array(buffer);
-//
-//   ctx.beginPath();
-//
-//   for (let row = 0; row < BOARD_HEIGHT; row++) {
-//     for (let col = 0; col < BOARD_WIDTH; col++) {
-//       const idx = row * BOARD_WIDTH + col;
-//       const cell = board[Math.floor(idx / 8)] & (1 << (7 - (idx % 8)));
-//
-//       ctx.fillStyle = cell == 0 ? COLOR_BLACK : COLOR_WHITE;
-//
-//       ctx.fillRect(
-//         col * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
-//         row * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
-//         CELL_SIZE,
-//         CELL_SIZE,
-//       );
-//     }
-//   }
-//
-//   ctx.stroke();
-// }
-//
-// // Trigger request on click.
-// canvas.addEventListener("click", async (event) => {
-//   const boundingRect = canvas.getBoundingClientRect();
-//
-//   const scaleX = canvas.width / boundingRect.width;
-//   const scaleY = canvas.height / boundingRect.height;
-//
-//   const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
-//   const canvasTop = (event.clientY - boundingRect.top) * scaleY;
-//
-//   // do nothing if click on grid, not cell
-//   const clickOnGrid =
-//     canvasLeft % (CELL_SIZE + SEP_WIDTH) < SEP_WIDTH ||
-//     canvasTop % (CELL_SIZE + SEP_WIDTH) < SEP_WIDTH;
-//   if (clickOnGrid) {
-//     return;
-//   }
-//
-//   const row = Math.floor(canvasTop / (CELL_SIZE + SEP_WIDTH));
-//   const col = Math.floor(canvasLeft / (CELL_SIZE + SEP_WIDTH));
-//
-//   await fetch(API + "/toggle", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ row: row, col: col }),
-//   });
-// });
-//
-// // Establish websocket connection.
-// const socket = new WebSocket(WS);
-//
-// socket.onmessage = (event) => {
-//   const data = JSON.parse(event.data);
-//
-//   ctx.beginPath();
-//
-//   ctx.fillStyle = data.color == 0 ? COLOR_BLACK : COLOR_WHITE;
-//
-//   ctx.fillRect(
-//     data.col * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
-//     data.row * (CELL_SIZE + SEP_WIDTH) + SEP_WIDTH,
-//     CELL_SIZE,
-//     CELL_SIZE,
-//   );
-//
-//   ctx.stroke();
-// };
-//
-// // Draw the initial state of board once.
-// drawBoard();
+  // Fetch the whole board
+  // $.ajax doesn't handle raw bytes well, use fetch API instead
+  const response = await fetch("/board");
+  const buffer = await response.arrayBuffer();
+  const board = new Uint8Array(buffer);
+
+  // Draw the initial board
+  const ctx = canvas.getContext("2d");
+  ctx.beginPath();
+  for (let row = 0; row < BOARD_HEIGHT; row++) {
+    for (let col = 0; col < BOARD_WIDTH; col++) {
+      const idx = row * BOARD_WIDTH + col;
+      const b = board[Math.floor(idx / 2)]; // two colors packed in one byte
+      const color = idx % 2 ? b & 15 : b >> 4;
+
+      ctx.fillStyle = COLORS[color];
+      ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+    }
+  }
+  ctx.stroke();
+
+  // Click on canvas to draw
+  canvas.addEventListener("click", async (event) => {
+    // Get the real clicking position
+    const boundingRect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / boundingRect.width;
+    const scaleY = canvas.height / boundingRect.height;
+    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+    const row = Math.floor(canvasTop / cellSize);
+    const col = Math.floor(canvasLeft / cellSize);
+    $.post("pixel", { row, col, color });
+  });
+
+  // Establish websocket connection
+  // FIX: This will not work on deployment
+  const socket = new WebSocket("ws://" + document.location.host + "/ws");
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    ctx.beginPath();
+    ctx.fillStyle = COLORS[data.color];
+    ctx.fillRect(data.col * cellSize, data.row * cellSize, cellSize, cellSize);
+    ctx.stroke();
+  };
+});

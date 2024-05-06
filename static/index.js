@@ -25,16 +25,28 @@ var color = 0;
 
 $(document).ready(async function () {
   // Color pickers
-  // TODO: The check is hard to see on darker colors.
-  // Is there a better way to highlight current selection?
   $(".color").each(function (index) {
-    $(this).css("background-color", COLORS[index]);
+    const hex = COLORS[index];
+    $(this).css("background-color", hex);
+
+    // Calculate the color of the tick symbol
+    const r = parseInt(hex.slice(1, 3), 16),
+      g = parseInt(hex.slice(3, 5), 16),
+      b = parseInt(hex.slice(5, 7), 16);
+    // https://stackoverflow.com/a/3943023/112731
+    const tickColor =
+      r * 0.299 + g * 0.587 + b * 0.114 > 186 ? "#000000" : "#FFFFFF";
+
     $(this).click(function () {
       $(".color").eq(color).html(`&nbsp;`);
       color = index;
-      $(this).html(`<i class="fa-solid fa-check"></i>`);
+      $(this).html(
+        `<i class="fa-solid fa-check" style="color: ${tickColor}"></i>`,
+      );
     });
   });
+  // Init click on the default color to show the tick
+  $(".color").eq(color).trigger("click");
 
   // Set the canvas size to fill up the container as much as possible
   const canvas = document.getElementById("place");

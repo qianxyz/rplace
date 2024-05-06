@@ -1,3 +1,5 @@
+// The API handlers for manipulating board state.
+
 package main
 
 import (
@@ -13,9 +15,9 @@ type coord struct {
 	Col int `form:"col" json:"col"`
 }
 
-type update struct {
+type pixel struct {
 	coord
-	Color int `json:"color"`
+	Color int `form:"color" json:"color"`
 }
 
 func getPixel(c *gin.Context) {
@@ -35,32 +37,27 @@ func getPixel(c *gin.Context) {
 	c.JSON(http.StatusOK, val)
 }
 
-func togglePixel(c *gin.Context) {
-	var co coord
+func setPixel(c *gin.Context) {
+	var p pixel
 
-	if err := c.Bind(&co); err != nil {
+	if err := c.Bind(&p); err != nil {
 		return
 	}
 
-	val, err := board.togglePixel(co.Row, co.Col)
+	err := board.setPixel(p.Row, p.Col, p.Color)
 	if err != nil {
-		log.Println("togglePixel:", err)
+		log.Println("setPixel:", err)
 		c.String(http.StatusServiceUnavailable, "db error")
 		return
 	}
 
-	c.JSON(http.StatusOK, val)
+	c.JSON(http.StatusOK, p.Color)
 
-	// inform the websocket server
-	upd := update{
-		coord: co,
-		Color: val,
-	}
-	data, err := json.Marshal(upd)
+	// Send the update to the websocket server.
+	data, err := json.Marshal(p)
 	if err != nil {
 		log.Println(err)
 	}
-
 	wss.broadcast <- data
 }
 

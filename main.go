@@ -15,7 +15,7 @@ func main() {
 
 	// API endpoints
 	router.GET("/pixel", getPixel)
-	router.POST("/toggle", togglePixel)
+	router.POST("/pixel", setPixel)
 	router.GET("/board", getBoard)
 
 	// Front end

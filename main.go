@@ -1,6 +1,9 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
+)
 
 const (
 	width  = 16
@@ -16,8 +19,7 @@ func main() {
 	router.GET("/board", getBoard)
 
 	// Front end
-	router.StaticFile("/", "./index.html")
-	router.StaticFile("/index.js", "./index.js")
+	router.Use(static.Serve("/", static.LocalFile("./static", false)))
 
 	// websocket
 	go wss.run()

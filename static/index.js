@@ -93,8 +93,9 @@ $(document).ready(async function () {
   });
 
   // Establish websocket connection
-  // FIX: This will not work on deployment
-  const socket = new WebSocket("ws://" + document.location.host + "/ws");
+  const url = new URL("ws", document.baseURI);
+  url.protocol = url.protocol.replace("http", "ws");
+  const socket = new WebSocket(url);
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);

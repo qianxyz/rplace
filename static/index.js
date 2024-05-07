@@ -21,7 +21,10 @@ const COLORS = [
   "#820080",
 ];
 
+const COOLDOWN = 5000; // 5s
+
 var color = 0;
+var isCoolingDown = false;
 
 $(document).ready(async function () {
   // Color pickers
@@ -80,6 +83,16 @@ $(document).ready(async function () {
 
   // Click on canvas to draw
   canvas.addEventListener("click", async (event) => {
+    if (isCoolingDown) {
+      return;
+    }
+    isCoolingDown = true;
+    setTimeout(() => (isCoolingDown = false), COOLDOWN);
+
+    // Cooldown animation
+    $("#cooldownBar").width("0%");
+    $("#cooldownBar").animate({ width: "100%" }, COOLDOWN);
+
     // Get the real clicking position
     const boundingRect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / boundingRect.width;

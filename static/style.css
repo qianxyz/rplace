@@ -11,3 +11,8 @@ body {
 .color {
   cursor: pointer;
 }
+
+#cooldownBar {
+  -webkit-transition: none !important;
+  transition: none !important;
+}

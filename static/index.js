@@ -59,7 +59,7 @@ $(document).ready(async function () {
 
   // Fetch the whole board
   // $.ajax doesn't handle raw bytes well, use fetch API instead
-  const response = await fetch("/board");
+  const response = await fetch("board");
   const buffer = await response.arrayBuffer();
   const board = new Uint8Array(buffer);
 

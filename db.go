@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -18,10 +19,17 @@ type db struct {
 	key    string
 }
 
+func redisAddr() string {
+	if addr := os.Getenv("REDIS_ADDR"); addr != "" {
+		return addr
+	}
+	return "localhost:6379"
+}
+
 var board = &db{
 	ctx: context.Background(),
 	client: redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr(),
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	}),

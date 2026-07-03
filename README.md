@@ -5,7 +5,11 @@ collaborative real-time canvas.
 
 ## Quickstart
 
-- Start a local Redis server on port 6379.
+Run `docker compose up` and open `localhost:8080` in the browser.
+
+Or without Docker:
+
+- Start a local Redis server on port 6379 (or point `REDIS_ADDR` elsewhere).
 - Start the server by `go run .`
 - Open `localhost:8080` in the browser.
 
